@@ -1,26 +1,27 @@
-#![feature(universal_impl_trait)]
 #![feature(catch_expr)]
 
 use std::fs::File;
-use std::path::Path;
 use std::io::prelude::*;
 
-fn get_file_string(path: impl AsRef<Path>) -> String {
+fn get_file_string(path: &str) -> String {
     let mut result = String::new();
-    do catch { File::open(path)?.read_to_string(&mut result) }.unwrap();
-    result
+    let err = do catch { File::open(path)?.read_to_string(&mut result) };
+    match err {
+        Err(e) => panic!("Failed to read from file {} because {}", path, e),
+        Ok(_) => result,
+    }
 }
 
 mod day1 {
+    // Zip togeather the items with a given offset, and if they are equal, sum them
     pub fn sum_matching(input: &str, offset: usize) -> u32 {
-        let loopy = input.chars().cycle();
-        let zippy = loopy
+        let looped = input.chars().cycle();
+        looped
             .clone()
-            .zip(loopy.clone().skip(offset))
-            .take(input.len());
-        zippy
-            .filter_map(|(a, b)| if a == b { Some(a) } else { None })
-            .map(|x| x.to_digit(10).unwrap())
+            .zip(looped.skip(offset))
+            .take(input.len())
+            .filter(|&(a, b)| a == b)
+            .map(|x| x.1.to_digit(10).unwrap())
             .sum::<u32>()
     }
 
