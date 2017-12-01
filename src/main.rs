@@ -15,14 +15,12 @@ fn get_file_string(path: &str) -> String {
 mod day1 {
     // Zip togeather the items with a given offset, and if they are equal, sum them
     pub fn sum_matching(input: &str, offset: usize) -> u32 {
-        let looped = input.chars().cycle();
-        looped
-            .clone()
-            .zip(looped.skip(offset))
-            .take(input.len())
+        input
+            .chars()
+            .zip(input.chars().cycle().skip(offset))
             .filter(|&(a, b)| a == b)
             .map(|x| x.1.to_digit(10).unwrap())
-            .sum::<u32>()
+            .sum()
     }
 
     pub fn part1(input: &str) -> u32 {
