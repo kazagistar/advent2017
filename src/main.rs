@@ -1,9 +1,6 @@
 #![feature(catch_expr)]
 #![feature(universal_impl_trait)]
 
-#[macro_use]
-extern crate rulinalg;
-
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -51,29 +48,54 @@ mod day1 {
 }
 
 mod day2 {
-    use rulinalg::matrix::{BaseMatrix, Matrix};
-
-    fn parser(input: &str) -> Matrix<i32> {
-        let lists = input
+    fn parser(input: &str) -> Vec<Vec<i32>> {
+        input
             .split('\n')
             .map(|line| {
-                line.split('\t').map(|cell| cell.parse().unwrap()).collect()
+                line.split('\t')
+                    .flat_map(|cell| cell.parse())
+                    .collect::<Vec<_>>()
             })
-            .collect();
-        let height = lists.len();
-        let width = lists[0].len();
-        Matrix::new(height, width, lists.iter().flat_map(|x| x))
+            .filter(|row| row.len() != 0)
+            .collect()
     }
 
-    fn min_max_diff(list: impl Iterator<Item = &i32> + Clone) -> Option<i32> {
-        Some(list.max()? - list.min()?)
+    pub fn part1(input: &str) -> i32 {
+        parser(input)
+            .iter()
+            .map(|v| v.iter().max().unwrap() - v.iter().min().unwrap())
+            .sum()
     }
 
-    fn part1(input: &str) -> i32 {
-        let array = parser(input);
-        let horizontals = array.row_iter().map(|x| min_max_diff(x.iter())).sum();
-        let verticals = array.col_iter().map(|x| min_max_diff(x.iter())).sum();
-        horizontals + verticals
+    fn combinations(input: &[i32]) -> Vec<(i32, i32)> {
+        let mut result = Vec::new();
+        let mut iter = input.iter().cloned();
+        while let Some(x) = iter.next() {
+            for y in iter.clone() {
+                result.push((x, y));
+            }
+        }
+        result
+    }
+
+    pub fn part2(input: &str) -> i32 {
+        parser(input)
+            .iter()
+            .map(|v| {
+                combinations(&v)
+                    .iter()
+                    .map(|&(x, y)| {
+                        if x % y == 0 {
+                            x / y
+                        } else if y % x == 0 {
+                            y / x
+                        } else {
+                            0
+                        }
+                    })
+                    .sum::<i32>()
+            })
+            .sum()
     }
 }
 
@@ -83,4 +105,6 @@ fn main() {
     println!("Day 1, part 2: {}", day1::part2(&input1));
 
     let input2 = get_file_string("data/input2.txt");
+    println!("Day 2, part 1: {}", day2::part1(&input2));
+    println!("Day 2, part 2: {}", day2::part2(&input2));
 }

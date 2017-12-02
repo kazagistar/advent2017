@@ -4,4 +4,3 @@ version = "0.1.0"
 authors = ["kazagistar"]
 
 [dependencies]
-rulinalg="0.4.2"
