@@ -108,3 +108,14 @@ pub fn part2(target: u32) -> u32 {
     }
     unreachable!()
 }
+
+#[test]
+fn examples() {
+    assert_eq!(0, part1(1));
+    assert_eq!(3, part1(12));
+    assert_eq!(2, part1(23));
+    assert_eq!(31, part1(1024));
+
+    assert_eq!(304, part2(147));
+    assert_eq!(806, part2(800));
+}
