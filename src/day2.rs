@@ -47,3 +47,18 @@ pub fn part2(input: &str) -> i32 {
         })
         .sum()
 }
+
+#[test]
+fn examples() {
+    let sheet1 = "
+5	1	9	5
+7	5	3
+2	4	6	8";
+    assert_eq!(18, part1(sheet1));
+
+    let sheet2 = "
+5	9	2	8
+9	4	7	3
+3	8	6	5";
+    assert_eq!(9, part2(sheet2));
+}
