@@ -57,7 +57,8 @@ impl Add for Vector {
 fn spiral() -> impl Iterator<Item = Vector> {
     let generator = move || {
         let mut pos = Vector(0, 0);
-        let mut dir = Direction::North;
+        let mut dir = North;
+        // 1 north, 1 west, 2 south, 2 east, 3 north, 3 west, 4 south, 4 east, etc...
         for stepsize in 1.. {
             for _ in 0..2 {
                 for _ in 0..stepsize {
@@ -76,6 +77,7 @@ struct GenIter<T: Generator> {
     generator: T,
 }
 
+// I feel like this should be in the standard library (as generator.into_iter()), but I guess generator trait is still experimental
 impl<T: Generator> Iterator for GenIter<T> {
     type Item = T::Yield;
 
@@ -99,7 +101,7 @@ pub fn part2(target: u32) -> u32 {
     for position in spiral().skip(1) {
         let total: u32 = AROUND
             .iter()
-            .flat_map(|&nearby| marks.get(&(position + nearby)).map(|x| *x))
+            .flat_map(|&nearby| marks.get(&(position + nearby)))
             .sum();
         if total > target {
             return total;
