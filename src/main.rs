@@ -1,5 +1,9 @@
 #![feature(catch_expr)]
 #![feature(universal_impl_trait)]
+#![feature(conservative_impl_trait)]
+#![feature(generators)]
+#![feature(generator_trait)]
+#![feature(never_type)]
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -101,7 +105,9 @@ mod day2 {
 
 mod day3 {
     use std::ops::Add;
+    use std::ops::{Generator, GeneratorState};
     use std::collections::HashMap;
+    use self::Direction::*;
 
     #[derive(Eq, PartialEq, Debug, Copy, Clone, Hash)]
     struct Vector(i32, i32);
@@ -128,19 +134,19 @@ mod day3 {
     impl Direction {
         fn step(self) -> Vector {
             match self {
-                Direction::North => Vector(0, 1),
-                Direction::East => Vector(1, 0),
-                Direction::South => Vector(0, -1),
-                Direction::West => Vector(-1, 0),
+                North => Vector(0, 1),
+                East => Vector(1, 0),
+                South => Vector(0, -1),
+                West => Vector(-1, 0),
             }
         }
 
         fn left(self) -> Self {
             match self {
-                Direction::North => Direction::West,
-                Direction::East => Direction::North,
-                Direction::South => Direction::East,
-                Direction::West => Direction::South,
+                North => West,
+                East => North,
+                South => East,
+                West => South,
             }
         }
     }
@@ -154,58 +160,59 @@ mod day3 {
         }
     }
 
-    fn spiral_marking(target: u32) -> u32 {
-        let mut pos = Vector(0, 0);
-        let mut dir = Direction::North;
-        let mut marks = HashMap::new();
-        marks.insert(pos, 1);
-
-        for stepsize in 1.. {
-            for _ in 0..2 {
-                for _ in 0..stepsize {
-                    pos = pos + dir.step();
-                    let total: u32 = AROUND
-                        .iter()
-                        .flat_map(|&nearby| marks.get(&(pos + nearby)).map(|x| *x))
-                        .sum();
-                    if total > target {
-                        return total;
+    fn spiral() -> impl Iterator<Item = Vector> {
+        let generator = move || {
+            let mut pos = Vector(0, 0);
+            let mut dir = Direction::North;
+            for stepsize in 1.. {
+                for _ in 0..2 {
+                    for _ in 0..stepsize {
+                        yield pos;
+                        pos = pos + dir.step();
                     }
-                    marks.insert(pos, total);
+                    dir = dir.left();
                 }
-                dir = dir.left();
             }
-        }
-        unreachable!()
+            unreachable!()
+        };
+        GenIter { generator }
     }
 
-    fn spiral(target: u32) -> Vector {
-        let mut pos = Vector(0, 0);
-        let mut dir = Direction::North;
-        let mut idx = 1;
+    struct GenIter<T: Generator> {
+        generator: T,
+    }
 
-        for stepsize in 1.. {
-            for _ in 0..2 {
-                for _ in 0..stepsize {
-                    if idx == target {
-                        return pos;
-                    }
-                    pos = pos + dir.step();
-                    idx += 1;
-                }
-                dir = dir.left();
+    impl<T: Generator> Iterator for GenIter<T> {
+        type Item = T::Yield;
+
+        fn next(&mut self) -> Option<Self::Item> {
+            match self.generator.resume() {
+                GeneratorState::Yielded(value) => Some(value),
+                GeneratorState::Complete(_) => None,
             }
         }
-        unreachable!()
     }
 
     pub fn part1(target: u32) -> i32 {
-        let Vector(x, y) = spiral(target);
+        let Vector(x, y) = spiral().skip(target as usize - 1).next().unwrap();
         x.abs() + y.abs()
     }
 
     pub fn part2(target: u32) -> u32 {
-        spiral_marking(target)
+        let mut marks = HashMap::new();
+        marks.insert(Vector(0, 0), 1);
+
+        for position in spiral().skip(1) {
+            let total: u32 = AROUND
+                .iter()
+                .flat_map(|&nearby| marks.get(&(position + nearby)).map(|x| *x))
+                .sum();
+            if total > target {
+                return total;
+            }
+            marks.insert(position, total);
+        }
+        unreachable!()
     }
 }
 
