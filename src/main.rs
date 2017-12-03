@@ -99,6 +99,116 @@ mod day2 {
     }
 }
 
+mod day3 {
+    use std::ops::Add;
+    use std::collections::HashMap;
+
+    #[derive(Eq, PartialEq, Debug, Copy, Clone, Hash)]
+    struct Vector(i32, i32);
+
+    #[derive(Eq, PartialEq, Debug, Copy, Clone)]
+    enum Direction {
+        North,
+        South,
+        East,
+        West,
+    }
+
+    static AROUND: &'static [Vector] = &[
+        Vector(0, 1),
+        Vector(1, 0),
+        Vector(0, -1),
+        Vector(-1, 0),
+        Vector(1, 1),
+        Vector(1, -1),
+        Vector(-1, -1),
+        Vector(-1, 1),
+    ];
+
+    impl Direction {
+        fn step(self) -> Vector {
+            match self {
+                Direction::North => Vector(0, 1),
+                Direction::East => Vector(1, 0),
+                Direction::South => Vector(0, -1),
+                Direction::West => Vector(-1, 0),
+            }
+        }
+
+        fn left(self) -> Self {
+            match self {
+                Direction::North => Direction::West,
+                Direction::East => Direction::North,
+                Direction::South => Direction::East,
+                Direction::West => Direction::South,
+            }
+        }
+    }
+
+    impl Add for Vector {
+        type Output = Self;
+        fn add(self, rhs: Vector) -> Self {
+            let Vector(x1, y1) = self;
+            let Vector(x2, y2) = rhs;
+            Vector(x1 + x2, y1 + y2)
+        }
+    }
+
+    fn spiral_marking(target: u32) -> u32 {
+        let mut pos = Vector(0, 0);
+        let mut dir = Direction::North;
+        let mut marks = HashMap::new();
+        marks.insert(pos, 1);
+
+        for stepsize in 1.. {
+            for _ in 0..2 {
+                for _ in 0..stepsize {
+                    pos = pos + dir.step();
+                    let total: u32 = AROUND
+                        .iter()
+                        .flat_map(|&nearby| marks.get(&(pos + nearby)).map(|x| *x))
+                        .sum();
+                    if total > target {
+                        return total;
+                    }
+                    marks.insert(pos, total);
+                }
+                dir = dir.left();
+            }
+        }
+        unreachable!()
+    }
+
+    fn spiral(target: u32) -> Vector {
+        let mut pos = Vector(0, 0);
+        let mut dir = Direction::North;
+        let mut idx = 1;
+
+        for stepsize in 1.. {
+            for _ in 0..2 {
+                for _ in 0..stepsize {
+                    if idx == target {
+                        return pos;
+                    }
+                    pos = pos + dir.step();
+                    idx += 1;
+                }
+                dir = dir.left();
+            }
+        }
+        unreachable!()
+    }
+
+    pub fn part1(target: u32) -> i32 {
+        let Vector(x, y) = spiral(target);
+        x.abs() + y.abs()
+    }
+
+    pub fn part2(target: u32) -> u32 {
+        spiral_marking(target)
+    }
+}
+
 fn main() {
     let input1 = get_file_string("data/input1.txt");
     println!("Day 1, part 1: {}", day1::part1(&input1));
@@ -107,4 +217,8 @@ fn main() {
     let input2 = get_file_string("data/input2.txt");
     println!("Day 2, part 1: {}", day2::part1(&input2));
     println!("Day 2, part 2: {}", day2::part2(&input2));
+
+    let input3 = 277678;
+    println!("Day 3, part 1: {}", day3::part1(input3));
+    println!("Day 3, part 2: {}", day3::part2(input3));
 }
