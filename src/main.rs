@@ -9,6 +9,7 @@ mod input;
 mod day1;
 mod day2;
 mod day3;
+mod day4;
 
 fn main() {
     let input1 = input::get_file_string("data/input1.txt");
@@ -22,4 +23,8 @@ fn main() {
     let input3 = 277678;
     println!("Day 3, part 1: {}", day3::part1(input3));
     println!("Day 3, part 2: {}", day3::part2(input3));
+
+    let input4 = input::get_file_string("data/input4.txt");
+    println!("Day 4, part 1: {}", day4::part1(&input4));
+    println!("Day 4, part 2: {}", day4::part2(&input4));
 }
