@@ -1,33 +1,21 @@
 use std::collections::HashSet;
+use std::hash::Hash;
 
 pub fn part1(input: &str) -> usize {
-    input.lines().filter(|pw| !dupes(pw)).count()
-}
-
-fn dupes(passphrase: &str) -> bool {
-    let mut dupes = HashSet::new();
-    for password in passphrase.split_whitespace() {
-        if dupes.contains(password) {
-            return true;
-        }
-        dupes.insert(password);
-    }
-    return false;
+    count_uniques(input, |x| x)
 }
 
 pub fn part2(input: &str) -> usize {
-    input.lines().filter(|pw| !anagram_dupes(pw)).count()
+    count_uniques(input, |word| {
+        let mut word: Vec<_> = word.chars().collect();
+        word.sort();
+        word
+    })
 }
 
-fn anagram_dupes(passphrase: &str) -> bool {
-    let mut dupes = HashSet::new();
-    for password in passphrase.split_whitespace() {
-        let mut password: Vec<_> = password.chars().collect();
-        password.sort();
-        if dupes.contains(&password) {
-            return true;
-        }
-        dupes.insert(password);
-    }
-    return false;
+fn count_uniques<'a, Key: Ord + Hash + Eq + 'a>(input: &'a str, key: impl Fn(&'a str) -> Key) -> usize {
+    input.lines().filter(|passphrase| {
+        let mut dupes = HashSet::new();
+        passphrase.split_whitespace().flat_map(|word| dupes.replace(key(word))).count() == 0
+    }).count()
 }
