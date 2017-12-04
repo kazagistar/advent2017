@@ -21,7 +21,9 @@ pub fn get_file_string(path: &str) -> String {
 use std::str::{Lines, SplitWhitespace};
 
 pub fn spreadsheet_parse(input: &str) -> SheetParser {
-    SheetParser { wrapped: input.lines() }
+    SheetParser {
+        wrapped: input.lines(),
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -29,11 +31,13 @@ pub struct SheetParser<'a> {
     wrapped: Lines<'a>,
 }
 
-impl <'a> Iterator for SheetParser<'a> {
+impl<'a> Iterator for SheetParser<'a> {
     type Item = LineParser<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        Some(LineParser { wrapped: self.wrapped.next()?.split_whitespace() })
+        Some(LineParser {
+            wrapped: self.wrapped.next()?.split_whitespace(),
+        })
     }
 }
 
@@ -42,7 +46,7 @@ pub struct LineParser<'a> {
     wrapped: SplitWhitespace<'a>,
 }
 
-impl <'a> Iterator for LineParser<'a> {
+impl<'a> Iterator for LineParser<'a> {
     type Item = i32;
 
     fn next(&mut self) -> Option<Self::Item> {

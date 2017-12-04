@@ -6,7 +6,7 @@ pub fn part1(input: &str) -> i32 {
         .sum()
 }
 
-fn combinations<'a>(mut iter: impl Iterator<Item=i32> + Clone + 'a) -> Vec<(i32, i32)> {
+fn combinations<'a>(mut iter: impl Iterator<Item = i32> + Clone + 'a) -> Vec<(i32, i32)> {
     let mut result = Vec::new();
     while let Some(x) = iter.next() {
         for y in iter.clone() {
