@@ -4,6 +4,7 @@
 #![feature(generators)]
 #![feature(generator_trait)]
 #![feature(never_type)]
+#![feature(range_contains)]
 
 mod input;
 mod day1;

@@ -1,30 +1,22 @@
 pub fn part1(input: &str) -> usize {
-    let mut maze: Vec<i32> = input
-        .split_whitespace()
-        .map(|line| line.parse().unwrap())
-        .collect();
-    let mut pos = 0;
-    let mut count = 0;
-    while 0 <= pos && pos < maze.len() as i32 {
-        let offset = maze[pos as usize];
-        maze[pos as usize] += 1;
-        pos += offset;
-        count += 1
-    }
-    count
+    escape(input, |x| x + 1)
 }
 
 pub fn part2(input: &str) -> usize {
+    escape(input, |x| if x >= 3 { x - 1 } else { x + 1 })
+}
+
+fn escape(input: &str, update: impl Fn(i32) -> i32) -> usize {
     let mut maze: Vec<i32> = input
         .split_whitespace()
         .map(|line| line.parse().unwrap())
         .collect();
-    let mut pos = 0;
+    let mut position = 0;
     let mut count = 0;
-    while 0 <= pos && pos < maze.len() as i32 {
-        let offset = maze[pos as usize];
-        maze[pos as usize] += if offset >= 3 { -1 } else { 1 };
-        pos += offset;
+    while (0..maze.len() as i32).contains(position) {
+        let offset = maze[position as usize];
+        maze[position as usize] = update(offset);
+        position += offset;
         count += 1
     }
     count
