@@ -1,54 +1,60 @@
-use std::collections::{BinaryHeap, HashSet};
+use std::collections::HashSet;
+use std::hash::{Hash, Hasher};
 
-#[derive(Ord, PartialOrd, Eq, PartialEq, Debug, Hash, Clone)]
-struct Bank {
-    memory: u16,
-    index: u16,
+#[derive(Eq, Debug)]
+struct Record {
+    record: Vec<u32>,
+    index: usize,
 }
 
-impl Bank {
-    fn take_memory(&mut self) -> u16 {
-        let mem = self.memory;
-        self.memory = 0;
-        mem
+impl Hash for Record {
+    fn hash<H>(&self, state: &mut H)
+    where
+        H: Hasher,
+    {
+        self.record.hash(state);
     }
 }
 
-pub fn part1(input: &str) -> usize {
-    let mut state: Vec<_> = input
+impl PartialEq for Record {
+    fn eq(&self, other: &Self) -> bool {
+        self.record == other.record
+    }
+}
+
+pub fn solve(input: &str) -> (usize, usize) {
+    let mut state: Vec<u32> = input
         .split_whitespace()
-        .enumerate()
-        .map(|(index, memory)| {
-            Bank {
-                index: index as u16,
-                memory: memory.parse().unwrap(),
-            }
-        })
+        .map(|i| i.parse().unwrap())
         .collect();
     let mut history = HashSet::new();
     for counter in 0.. {
-        state.sort();
         let old = state.clone();
-        println!("{} = {:?}", counter, old);
-        if let Some(_) = history.replace(old) {
-            return counter;
+        if let Some(repeat) = history.replace(Record {
+            record: old,
+            index: counter,
+        }) {
+            return (counter, counter - repeat.index);
         }
-        let mut spare: u16 = state.last_mut().unwrap().take_memory();
-        state.sort();
-        'rebalance: loop {
-            for bank in state.iter_mut() {
-                if spare == 0 {
-                    break 'rebalance;
-                }
-                bank.memory += 1;
-                spare -= 1;
-            }
+        let (mut bank, spare) = state
+            .iter_mut()
+            .enumerate()
+            .max_by_key(|&(index, &mut memory)| (memory, 0 - (index as i32)))
+            .map(|(index, memory)| {
+                let mem = memory.clone();
+                *memory = 0;
+                (index, mem)
+            })
+            .unwrap();
+        for _ in 0..spare {
+            bank = (bank + 1) % state.len();
+            state[bank] += 1;
         }
     }
     unreachable!()
 }
 
 #[test]
-fn day6test() {
-    assert_eq!(5, part1("0 2 7 0"));
+fn examples() {
+    assert_eq!((5, 4), solve("0 2 7 0"));
 }
