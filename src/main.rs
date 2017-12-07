@@ -6,6 +6,10 @@
 #![feature(never_type)]
 #![feature(range_contains)]
 
+#[macro_use]
+extern crate lazy_static;
+extern crate regex;
+
 mod input;
 mod day1;
 mod day2;
@@ -13,6 +17,7 @@ mod day3;
 mod day4;
 mod day5;
 mod day6;
+mod day7;
 
 fn main() {
     let input1 = input::get_file_string("data/input1.txt");
@@ -37,4 +42,7 @@ fn main() {
 
     let input6 = input::get_file_string("data/input6.txt");
     println!("Day 6, part (1, 2): {:?}", day6::solve(&input6));
+
+    let input7 = input::get_file_string("data/input7.txt");
+    println!("Day 7, part 1: {:?}", day7::part1(&input7));
 }
