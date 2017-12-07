@@ -5,7 +5,7 @@ pub fn part1(input: &str) -> &str {
     find_root(&parse_programs(input))
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> i32 {
     let programs = parse_programs(input);
     find_bad(&programs, find_root(&programs)).unwrap_err()
 }
@@ -14,7 +14,7 @@ lazy_static! {
     static ref MATCHER: Regex = Regex::new(r"(\w+) \((\d+)\)(?: -> (.*))?").unwrap();
 }
 
-type Weight = usize;
+type Weight = i32;
 
 struct Program<'a> {
     weight: Weight,
@@ -28,7 +28,7 @@ fn parse_line(input: &str) -> (&str, Program) {
     let children = captures
         .get(3)
         .map(|x| x.as_str().split(", ").collect())
-        .unwrap_or_else(Vec::new);
+        .unwrap_or_default();
     (name, Program { weight, children })
 }
 
@@ -49,18 +49,15 @@ fn find_root<'a, 'b>(programs: &'b HashMap<&'a str, Program<'a>>) -> &'a str {
 // Ok = child weight, Err = fixed bad weight
 fn find_bad(programs: &HashMap<&str, Program>, name: &str) -> Result<Weight, Weight> {
     let program = programs.get(name).unwrap();
-    if program.children.is_empty() {
-        return Ok(program.weight);
-    }
 
     let mut bunched = HashMap::new();
     for child in program.children.iter().cloned() {
         let weight = find_bad(programs, child)?;
         bunched.entry(weight).or_insert_with(Vec::new).push(child);
     }
-    if bunched.len() == 1 {
-        let children = program.children.len();
-        let weight_per_child = bunched.keys().next().unwrap();
+    if bunched.len() <= 1 {
+        let children = program.children.len() as Weight;
+        let weight_per_child = bunched.keys().cloned().next().unwrap_or_default();
         return Ok(children * weight_per_child + program.weight);
     }
 
