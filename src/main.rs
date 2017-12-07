@@ -45,4 +45,5 @@ fn main() {
 
     let input7 = input::get_file_string("data/input7.txt");
     println!("Day 7, part 1: {:?}", day7::part1(&input7));
+    println!("Day 7, part 2: {:?}", day7::part2(&input7));
 }
