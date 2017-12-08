@@ -56,3 +56,14 @@ fn parse_line(line: &str) -> Instruction {
         _ => unreachable!(),
     }
 }
+
+#[test]
+fn examples() {
+    let input = "b inc 5 if a > 1
+                 a inc 1 if b < 5
+                 c dec -10 if a >= 1
+                 c inc -20 if c == 10";
+    let (p1, p2) = solve(input);
+    assert_eq!(1, p1);
+    assert_eq!(10, p2);
+}
