@@ -5,6 +5,7 @@
 #![feature(generator_trait)]
 #![feature(never_type)]
 #![feature(range_contains)]
+#![feature(slice_patterns)]
 
 #[macro_use]
 extern crate lazy_static;
