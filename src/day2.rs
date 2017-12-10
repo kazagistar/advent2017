@@ -1,9 +1,16 @@
-use input::spreadsheet_parse as parse;
+fn mapsum_lines(input: &str, map: impl Fn(&[i32]) -> i32) -> i32 {
+    input
+        .lines()
+        .map(|line| {
+            map(&line.split_whitespace()
+                .map(|word| word.parse().unwrap())
+                .collect::<Vec<_>>())
+        })
+        .sum()
+}
 
 pub fn part1(input: &str) -> i32 {
-    parse(input)
-        .map(|v| v.clone().max().unwrap() - v.min().unwrap())
-        .sum()
+    mapsum_lines(input, |v| v.iter().max().unwrap() - v.iter().min().unwrap())
 }
 
 fn combinations<'a>(mut iter: impl Iterator<Item = i32> + Clone + 'a) -> Vec<(i32, i32)> {
@@ -17,22 +24,20 @@ fn combinations<'a>(mut iter: impl Iterator<Item = i32> + Clone + 'a) -> Vec<(i3
 }
 
 pub fn part2(input: &str) -> i32 {
-    parse(input)
-        .map(|v| {
-            combinations(v)
-                .iter()
-                .map(|&(x, y)| {
-                    if x % y == 0 {
-                        x / y
-                    } else if y % x == 0 {
-                        y / x
-                    } else {
-                        0
-                    }
-                })
-                .sum::<i32>()
-        })
-        .sum()
+    mapsum_lines(input, |v| {
+        combinations(v.iter().cloned())
+            .iter()
+            .map(|&(x, y)| {
+                if x % y == 0 {
+                    x / y
+                } else if y % x == 0 {
+                    y / x
+                } else {
+                    0
+                }
+            })
+            .sum::<i32>()
+    })
 }
 
 #[test]

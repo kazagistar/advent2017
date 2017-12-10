@@ -1,7 +1,7 @@
 use std::ops::Add;
-use std::ops::{Generator, GeneratorState};
 use std::collections::HashMap;
 use self::Direction::*;
+use util::GenIter;
 
 #[derive(Eq, PartialEq, Debug, Copy, Clone, Hash)]
 struct Vector(i32, i32);
@@ -55,7 +55,7 @@ impl Add for Vector {
 }
 
 fn spiral() -> impl Iterator<Item = Vector> {
-    let generator = move || {
+    GenIter::from(|| {
         let mut pos = Vector(0, 0);
         let mut dir = North;
         // 1 north, 1 west, 2 south, 2 east, 3 north, 3 west, 4 south, 4 east, etc...
@@ -69,24 +69,7 @@ fn spiral() -> impl Iterator<Item = Vector> {
             }
         }
         unreachable!()
-    };
-    GenIter { generator }
-}
-
-struct GenIter<T: Generator> {
-    generator: T,
-}
-
-// I feel like this should be in the standard library (as generator.into_iter()), but I guess generator trait is still experimental
-impl<T: Generator> Iterator for GenIter<T> {
-    type Item = T::Yield;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.generator.resume() {
-            GeneratorState::Yielded(value) => Some(value),
-            GeneratorState::Complete(_) => None,
-        }
-    }
+    })
 }
 
 pub fn part1(target: u32) -> i32 {
@@ -96,10 +79,12 @@ pub fn part1(target: u32) -> i32 {
 
 pub fn part2(target: u32) -> u32 {
     let mut marks = HashMap::new();
-    marks.insert(Vector(0, 0), 1);
+    let mut spiral = spiral();
+    marks.insert(spiral.next().unwrap(), 1);
 
-    for position in spiral().skip(1) {
-        let total: u32 = AROUND
+    loop {
+        let position = spiral.next().unwrap();
+        let total = AROUND
             .iter()
             .flat_map(|&nearby| marks.get(&(position + nearby)))
             .sum();
@@ -108,7 +93,6 @@ pub fn part2(target: u32) -> u32 {
         }
         marks.insert(position, total);
     }
-    unreachable!()
 }
 
 #[test]

@@ -29,7 +29,7 @@ pub fn part2(input: &str) -> i32 {
     let mut iter = input.chars();
     loop {
         if iter.find(|&c| c == '<') == None {
-            break count;
+            return count;
         }
         loop {
             match iter.next().unwrap() {
