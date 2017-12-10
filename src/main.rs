@@ -21,6 +21,7 @@ mod day6;
 mod day7;
 mod day8;
 mod day9;
+mod day10;
 
 fn main() {
     let input1 = util::get_file_string("data/input1.txt");
@@ -56,4 +57,8 @@ fn main() {
     let input9 = util::get_file_string("data/input9.txt");
     println!("Day 9, part 1: {:?}", day9::part1(&input9));
     println!("Day 9, part 2: {:?}", day9::part2(&input9));
+
+    let input10 = util::get_file_string("data/input10.txt");
+    println!("Day 10, part 1: {:?}", day10::part1(&input10));
+    // println!("Day 10, part 1: {:?}", day10::part1("3,4,1,5"));
 }
