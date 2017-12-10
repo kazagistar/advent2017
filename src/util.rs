@@ -1,6 +1,9 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::ops::{Generator, GeneratorState};
+use std::fmt::LowerHex;
+use std::fmt::Write;
+use std::mem::size_of;
 
 pub fn get_file_string(path: &str) -> String {
     let mut result = String::new();
@@ -31,4 +34,13 @@ impl<T: Generator> Iterator for GenIter<T> {
             GeneratorState::Complete(_) => None,
         }
     }
+}
+
+pub fn hex<T>(array: impl IntoIterator<Item = T>) -> String where T: LowerHex {
+    let per_item = size_of::<T>() * 2;
+    let mut buff = String::new();
+    for item in array {
+        write!(&mut buff, "{:0width$x}", item, width = per_item).unwrap();
+    }
+    buff
 }

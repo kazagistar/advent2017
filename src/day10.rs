@@ -1,4 +1,5 @@
 use std::ops::BitXor;
+use util::hex;
 
 struct KnotHash {
     array: Vec<u8>,
@@ -18,11 +19,8 @@ impl KnotHash {
     fn reverse(&mut self, min: usize, max: usize) {
         let len = self.array.len();
         let mid = (min + max) / 2;
-        for (i, j) in (min..mid)
-            .map(|i| i % len)
-            .zip((mid..max).rev().map(|i| i % len))
-        {
-            self.array.swap(i, j);
+        for (bot, top) in (min..mid).zip((mid..max).rev()) {
+            self.array.swap(bot % len, top % len);
         }
     }
 
@@ -36,10 +34,11 @@ impl KnotHash {
     }
 
     fn hash(&self) -> String {
-        self.array
-            .chunks(16)
-            .map(|chunk| format!("{:02x}", chunk.iter().fold(0, u8::bitxor)))
-            .collect()
+        hex(
+            self.array
+                .chunks(16)
+                .map(|chunk| chunk.iter().fold(0, u8::bitxor)),
+        )
     }
 }
 
@@ -66,6 +65,11 @@ pub fn part2(input: &str) -> String {
 
 #[test]
 fn examples() {
+    let mut knot = KnotHash::new();
+    knot.array = (0..5).collect();
+    knot.round(vec![3, 4, 1, 5]);
+    assert_eq!(vec![3, 4, 2, 1, 0], knot.array);
+
     assert_eq!("a2582a3a0e66e6e86e3812dcb672a272", part2(""));
     assert_eq!("33efeb34ea91902bb2f59c9920caa6cd", part2("AoC 2017"));
     assert_eq!("3efbe78a8d82f29979031a4aa0b16a9d", part2("1,2,3"));
