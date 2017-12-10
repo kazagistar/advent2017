@@ -6,6 +6,7 @@
 #![feature(never_type)]
 #![feature(range_contains)]
 #![feature(slice_patterns)]
+#![feature(inclusive_range_syntax)]
 
 #[macro_use]
 extern crate lazy_static;
@@ -60,5 +61,5 @@ fn main() {
 
     let input10 = util::get_file_string("data/input10.txt");
     println!("Day 10, part 1: {:?}", day10::part1(&input10));
-    // println!("Day 10, part 1: {:?}", day10::part1("3,4,1,5"));
+    println!("Day 10, part 2: {:?}", day10::part2(&input10));
 }
