@@ -1,5 +1,5 @@
 use std::ops::BitXor;
-use util::hex;
+use util::hexidecimal;
 
 struct KnotHash {
     array: Vec<u8>,
@@ -34,7 +34,7 @@ impl KnotHash {
     }
 
     fn hash(&self) -> String {
-        hex(
+        hexidecimal(
             self.array
                 .chunks(16)
                 .map(|chunk| chunk.iter().fold(0, u8::bitxor)),

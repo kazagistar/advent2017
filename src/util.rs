@@ -1,9 +1,10 @@
 use std::fs::File;
 use std::io::prelude::*;
-use std::ops::{Generator, GeneratorState};
 use std::fmt::LowerHex;
 use std::fmt::Write;
 use std::mem::size_of;
+use std::ops::{Add, AddAssign, Neg, Sub, SubAssign, Generator, GeneratorState};
+use std::iter::Sum;
 
 pub fn get_file_string(path: &str) -> String {
     let mut result = String::new();
@@ -36,11 +37,56 @@ impl<T: Generator> Iterator for GenIter<T> {
     }
 }
 
-pub fn hex<T>(array: impl IntoIterator<Item = T>) -> String where T: LowerHex {
+pub fn hexidecimal<T>(array: impl IntoIterator<Item = T>) -> String where T: LowerHex {
     let per_item = size_of::<T>() * 2;
     let mut buff = String::new();
     for item in array {
         write!(&mut buff, "{:0width$x}", item, width = per_item).unwrap();
     }
     buff
+}
+
+#[derive(Eq, PartialEq, Debug, Copy, Clone, Hash, Default)]
+pub struct Vector(pub i32, pub i32);
+
+impl Add for Vector {
+    type Output = Self;
+    fn add(self, rhs: Vector) -> Self {
+        let Vector(x1, y1) = self;
+        let Vector(x2, y2) = rhs;
+        Vector(x1 + x2, y1 + y2)
+    }
+}
+
+impl AddAssign for Vector {
+    fn add_assign(&mut self, other: Vector) {
+        *self = *self + other;
+    }
+}
+
+impl Neg for Vector {
+    type Output = Vector;
+    fn neg(self) -> Vector {
+        let Vector(x1, y1) = self;
+        Vector(-x1, -y1)
+    }
+}
+
+impl Sub for Vector {
+    type Output = Self;
+    fn sub(self, rhs: Vector) -> Self {
+        self + (-rhs)
+    }
+}
+
+impl SubAssign for Vector {
+    fn sub_assign(&mut self, other: Vector) {
+        *self = *self - other;
+    }
+}
+
+impl Sum for Vector {
+    fn sum<I>(iter: I) -> Self where I: Iterator<Item = Vector> {
+        iter.fold(Vector::default(), Add::add)
+    }
 }

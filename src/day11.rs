@@ -1,16 +1,4 @@
-use std::ops::Add;
-
-#[derive(Eq, PartialEq, Debug, Copy, Clone, Hash)]
-struct Vector(i32, i32);
-
-impl Add for Vector {
-    type Output = Self;
-    fn add(self, rhs: Vector) -> Self {
-        let Vector(x1, y1) = self;
-        let Vector(x2, y2) = rhs;
-        Vector(x1 + x2, y1 + y2)
-    }
-}
+use util::Vector;
 
 fn step(direction: &str) -> Vector {
     match direction {
@@ -33,18 +21,25 @@ fn hex_distance(&Vector(x, y): &Vector) -> i32 {
 }
 
 pub fn part1(input: &str) -> i32 {
-    hex_distance(&input
-        .split(",")
-        .map(step)
-        .fold(Vector(0, 0), |pos, step| pos + step))
+    hex_distance(&input.split(",").map(step).sum())
 }
 
 pub fn part2(input: &str) -> i32 {
     let mut pos = Vector(0, 0);
     let mut furthest = 0;
     for vec in input.split(",").map(step) {
-        pos = pos + vec;
+        pos += vec;
         furthest = furthest.max(hex_distance(&pos));
     }
     furthest
+}
+
+#[test]
+fn examples() {
+    assert_eq!(3, part1("ne,ne,ne"));
+    assert_eq!(0, part1("ne,ne,sw,sw"));
+    assert_eq!(2, part1("ne,ne,s,s"));
+    assert_eq!(3, part1("se,sw,se,sw,sw"));
+
+    assert_eq!(2, part2("ne,ne,sw,sw"));
 }

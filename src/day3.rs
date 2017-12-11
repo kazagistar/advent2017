@@ -1,10 +1,7 @@
-use std::ops::Add;
 use std::collections::HashMap;
 use self::Direction::*;
 use util::GenIter;
-
-#[derive(Eq, PartialEq, Debug, Copy, Clone, Hash)]
-struct Vector(i32, i32);
+use util::Vector;
 
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
 enum Direction {
@@ -45,25 +42,16 @@ impl Direction {
     }
 }
 
-impl Add for Vector {
-    type Output = Self;
-    fn add(self, rhs: Vector) -> Self {
-        let Vector(x1, y1) = self;
-        let Vector(x2, y2) = rhs;
-        Vector(x1 + x2, y1 + y2)
-    }
-}
-
 fn spiral() -> impl Iterator<Item = Vector> {
     GenIter::from(|| {
         let mut pos = Vector(0, 0);
         let mut dir = North;
         // 1 north, 1 west, 2 south, 2 east, 3 north, 3 west, 4 south, 4 east, etc...
-        for stepsize in 1.. {
-            for _ in 0..2 {
+        for stepsize in 1usize.. {
+            for _ in 0usize..2 {
                 for _ in 0..stepsize {
                     yield pos;
-                    pos = pos + dir.step();
+                    pos += dir.step();
                 }
                 dir = dir.left();
             }
