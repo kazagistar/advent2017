@@ -12,7 +12,7 @@ fn step(direction: &str) -> Vector {
     }
 }
 
-fn hex_distance(&Vector(x, y): &Vector) -> i32 {
+fn hex_distance(Vector(x, y): Vector) -> i32 {
     if x * y < 0 {
         x.abs() + y.abs()
     } else {
@@ -21,17 +21,20 @@ fn hex_distance(&Vector(x, y): &Vector) -> i32 {
 }
 
 pub fn part1(input: &str) -> i32 {
-    hex_distance(&input.split(",").map(step).sum())
+    hex_distance(input.split(",").map(step).sum())
 }
 
 pub fn part2(input: &str) -> i32 {
-    let mut pos = Vector(0, 0);
-    let mut furthest = 0;
-    for vec in input.split(",").map(step) {
-        pos += vec;
-        furthest = furthest.max(hex_distance(&pos));
-    }
-    furthest
+    input
+        .split(",")
+        .map(step)
+        .scan(Vector::default(), |pos, mov| {
+            *pos += mov;
+            Some(*pos)
+        })
+        .map(hex_distance)
+        .max()
+        .unwrap()
 }
 
 #[test]
