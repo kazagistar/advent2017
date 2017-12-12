@@ -10,7 +10,7 @@ type Plumbing = Graph<(), (), Undirected>;
 
 
 fn parse(line: &str) -> (Node, Vec<Node>) {
-    let split = line.split(" <-> ").collect::<Vec<&str>>();
+    let split = line.trim().split(" <-> ").collect::<Vec<&str>>();
     (
         split[0].parse().unwrap(),
         split[1].split(", ").map(|x| x.parse().unwrap()).collect(),
@@ -34,4 +34,14 @@ pub fn part2(input: &str) -> usize {
 }
 
 #[test]
-fn examples() {}
+fn examples() {
+    let input = "0 <-> 2
+                 1 <-> 1
+                 2 <-> 0, 3, 4
+                 3 <-> 2, 4
+                 4 <-> 2, 3, 6
+                 5 <-> 6
+                 6 <-> 4, 5";
+    assert_eq!(6, part1(input));
+    assert_eq!(2, part2(input));
+}
