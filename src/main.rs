@@ -10,6 +10,7 @@
 
 #[macro_use]
 extern crate lazy_static;
+extern crate petgraph;
 extern crate regex;
 
 mod util;
@@ -24,6 +25,7 @@ mod day8;
 mod day9;
 mod day10;
 mod day11;
+mod day12;
 
 fn main() {
     let input1 = util::get_file_string("data/input1.txt");
@@ -67,4 +69,8 @@ fn main() {
     let input11 = util::get_file_string("data/input11.txt");
     println!("Day 11, part 1: {:?}", day11::part1(&input11));
     println!("Day 11, part 2: {:?}", day11::part2(&input11));
+
+    let input12 = util::get_file_string("data/input12.txt");
+    println!("Day 12, part 1: {:?}", day12::part1(&input12));
+    println!("Day 12, part 2: {:?}", day12::part2(&input12));
 }
