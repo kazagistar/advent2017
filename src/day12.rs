@@ -1,12 +1,9 @@
-use petgraph::Graph;
-use petgraph::Undirected;
-use petgraph::graph::NodeIndex;
+use petgraph::{Graph, NodeIndex, Undirected};
 use petgraph::visit::{Bfs, Walker};
 use petgraph::algo::connected_components;
 
 type Node = u32;
-
-type Plumbing = Graph<(), (), Undirected>;
+type Plumbing = Graph<(), (), Undirected, Node>;
 
 
 fn parse(line: &str) -> (Node, Vec<Node>) {
