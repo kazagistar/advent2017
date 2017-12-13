@@ -1,16 +1,29 @@
-fn parse(line: &str) -> (usize, usize) {
-    let mut parts = line.trim().split(": ").map(|word| word.parse().unwrap());
-    (parts.next().unwrap(), parts.next().unwrap())
+struct Firewall {
+    depth: usize,
+    range: usize,
+}
+
+impl Firewall {
+    fn cycle(&self) -> usize {
+        (self.range - 1) * 2
+    }
+}
+
+fn parse<'a>(input: &'a str) -> impl Iterator<Item = Firewall> + 'a {
+    input.lines().map(|line| {
+        let mut parts = line.trim().split(": ").map(|word| word.parse().unwrap());
+        Firewall {
+            depth: parts.next().unwrap(),
+            range: parts.next().unwrap(),
+        }
+    })
 }
 
 pub fn part1(input: &str) -> usize {
-    input
-        .lines()
-        .map(|line| {
-            let (depth, range) = parse(line);
-            let cycle = (range - 1) * 2;
-            if depth % cycle == 0 {
-                depth * range
+    parse(input)
+        .map(|layer| {
+            if layer.depth % layer.cycle() == 0 {
+                layer.depth * layer.range
             } else {
                 0
             }
@@ -19,18 +32,12 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    let bads: Vec<_> = input
-        .lines()
-        .map(|line| {
-            let (depth, range) = parse(line);
-            let cycle = (range - 1) * 2;
-            (depth, cycle)
-        })
-        .collect();
+    let layers: Vec<Firewall> = parse(input).collect();
     (0..)
         .find(|time| {
-            !bads.iter()
-                .any(move |&(depth, cycle)| (depth + time) % cycle == 0)
+            !layers
+                .iter()
+                .any(move |layer| (layer.depth + time) % layer.cycle() == 0)
         })
         .unwrap()
 }
