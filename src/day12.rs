@@ -1,5 +1,6 @@
-use petgraph::{Graph, NodeIndex, Undirected};
+use petgraph::{Graph, Undirected};
 use petgraph::visit::{Bfs, Walker};
+use petgraph::graph::NodeIndex;
 use petgraph::algo::connected_components;
 
 type Node = u32;
