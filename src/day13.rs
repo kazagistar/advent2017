@@ -3,18 +3,13 @@ fn parse(line: &str) -> (usize, usize) {
     (parts.next().unwrap(), parts.next().unwrap())
 }
 
-fn pos(range: usize, time: usize) -> usize {
-    let full = (range - 1) * 2;
-    let cycle = time % full;
-    usize::min(cycle, full - cycle)
-}
-
 pub fn part1(input: &str) -> usize {
     input
         .lines()
         .map(|line| {
             let (depth, range) = parse(line);
-            if pos(range, depth) == 0 {
+            let cycle = (range - 1) * 2;
+            if depth % cycle == 0 {
                 depth * range
             } else {
                 0
@@ -23,8 +18,21 @@ pub fn part1(input: &str) -> usize {
         .sum()
 }
 
-pub fn part2(input: &str) -> &str {
-    "?"
+pub fn part2(input: &str) -> usize {
+    let bads: Vec<_> = input
+        .lines()
+        .map(|line| {
+            let (depth, range) = parse(line);
+            let cycle = (range - 1) * 2;
+            (depth, cycle)
+        })
+        .collect();
+    (0..)
+        .find(|time| {
+            !bads.iter()
+                .any(move |&(depth, cycle)| (depth + time) % cycle == 0)
+        })
+        .unwrap()
 }
 
 #[test]
@@ -34,4 +42,5 @@ fn examples() {
                  4: 4
                  6: 4";
     assert_eq!(24, part1(input));
+    assert_eq!(10, part2(input));
 }
