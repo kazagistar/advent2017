@@ -7,3 +7,4 @@ authors = ["kazagistar"]
 regex = "0.2"
 lazy_static = "1.0.0"
 petgraph = "0.4.10"
+bit-vec = "0.4.4"

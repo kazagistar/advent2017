@@ -1,5 +1,6 @@
 use std::ops::BitXor;
-use util::{binary, hexidecimal};
+use util::hexidecimal;
+use bit_vec::BitVec;
 
 static SUFFIX: &[usize] = &[17, 31, 73, 47, 23];
 
@@ -49,8 +50,8 @@ impl KnotHash {
         self.dense().collect()
     }
 
-    pub fn as_bin(&self) -> String {
-        binary(self.dense())
+    pub fn as_bits(&self) -> BitVec {
+        BitVec::from_bytes(&self.as_bytes())
     }
 }
 

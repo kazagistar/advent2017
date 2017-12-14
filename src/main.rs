@@ -8,6 +8,7 @@
 #![feature(slice_patterns)]
 #![feature(inclusive_range_syntax)]
 
+extern crate bit_vec;
 #[macro_use]
 extern crate lazy_static;
 extern crate petgraph;

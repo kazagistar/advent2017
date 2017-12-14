@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::prelude::*;
-use std::fmt::{Write, LowerHex, Binary};
+use std::fmt::{Write, LowerHex};
 use std::mem::size_of;
 use std::ops::{Add, AddAssign, Neg, Sub, SubAssign, Generator, GeneratorState};
 use std::iter::Sum;
@@ -41,15 +41,6 @@ pub fn hexidecimal<T>(array: impl IntoIterator<Item = T>) -> String where T: Low
     let mut buff = String::new();
     for item in array {
         write!(&mut buff, "{:0width$x}", item, width = per_item).unwrap();
-    }
-    buff
-}
-
-pub fn binary<T>(array: impl IntoIterator<Item = T>) -> String where T: Binary {
-    let per_item = size_of::<T>() * 8;
-    let mut buff = String::new();
-    for item in array {
-        write!(&mut buff, "{:0width$b}", item, width = per_item).unwrap();
     }
     buff
 }
