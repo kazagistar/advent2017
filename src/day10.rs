@@ -1,7 +1,9 @@
 use std::ops::BitXor;
-use util::hexidecimal;
+use util::{binary, hexidecimal};
 
-struct KnotHash {
+static SUFFIX: &[usize] = &[17, 31, 73, 47, 23];
+
+pub struct KnotHash {
     array: Vec<u8>,
     position: usize,
     skipsize: usize,
@@ -33,12 +35,37 @@ impl KnotHash {
         }
     }
 
-    fn hash(&self) -> String {
-        hexidecimal(
-            self.array
-                .chunks(16)
-                .map(|chunk| chunk.iter().fold(0, u8::bitxor)),
-        )
+    fn dense<'a>(&'a self) -> impl Iterator<Item = u8> + 'a {
+        self.array
+            .chunks(16)
+            .map(|chunk| chunk.iter().fold(0, u8::bitxor))
+    }
+
+    pub fn as_hex(&self) -> String {
+        hexidecimal(self.dense())
+    }
+
+    pub fn as_bytes(&self) -> Vec<u8> {
+        self.dense().collect()
+    }
+
+    pub fn as_bin(&self) -> String {
+        binary(self.dense())
+    }
+}
+
+impl<'a> From<&'a str> for KnotHash {
+    fn from(input: &str) -> KnotHash {
+        let lengths: Vec<usize> = input
+            .bytes()
+            .map(|b| b as usize)
+            .chain(SUFFIX.iter().cloned())
+            .collect();
+        let mut knot = KnotHash::new();
+        for _ in 0..64 {
+            knot.round(lengths.iter().cloned());
+        }
+        knot
     }
 }
 
@@ -48,19 +75,8 @@ pub fn part1(input: &str) -> i32 {
     knot.array[0] as i32 * knot.array[1] as i32
 }
 
-static SUFFIX: &[usize] = &[17, 31, 73, 47, 23];
-
 pub fn part2(input: &str) -> String {
-    let lengths: Vec<usize> = input
-        .bytes()
-        .map(|b| b as usize)
-        .chain(SUFFIX.iter().cloned())
-        .collect();
-    let mut knot = KnotHash::new();
-    for _ in 0..64 {
-        knot.round(lengths.iter().cloned());
-    }
-    knot.hash()
+    KnotHash::from(input).as_hex()
 }
 
 #[test]
