@@ -37,3 +37,10 @@ fn get_filled<'a>(input: &'a str) -> impl Iterator<Item = Vector> + 'a {
             .map(move |(x, _)| Vector(x as i32, y as i32))
     })
 }
+
+#[test]
+fn examples() {
+    let input = "flqrgnkx";
+    assert_eq!(8108, part1(input));
+    assert_eq!(1242, part2(input));
+}
