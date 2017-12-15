@@ -35,3 +35,9 @@ pub fn part2(a: i64, b: i64) -> usize {
         5_000_000,
     )
 }
+
+#[test]
+fn examples() {
+    assert_eq!(588, part1(65, 8921));
+    assert_eq!(309, part2(65, 8921));
+}
