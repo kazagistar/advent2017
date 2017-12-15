@@ -1,48 +1,37 @@
+use itertools::unfold;
+
 type Int = i64;
 
-struct Generator {
-    value: Int,
-    factor: Int,
-}
+const MOD: Int = 2147483647;
+const FACTOR_A: Int = 16807;
+const FACTOR_B: Int = 48271;
 
-static MOD: Int = 2147483647;
-
-impl Iterator for Generator {
-    type Item = Int;
-    fn next(&mut self) -> Option<Self::Item> {
-        self.value = self.value * self.factor % MOD;
-        Some(self.value)
+fn generator(factor: Int) -> impl Fn(&mut Int) -> Option<Int> {
+    move |value| {
+        *value = *value * factor % MOD;
+        Some(*value)
     }
 }
 
-pub fn part1(a: i64, b: i64) -> usize {
-    let gen_a = Generator {
-        value: a,
-        factor: 16807,
-    };
-    let gen_b = Generator {
-        value: b,
-        factor: 48271,
-    };
-    gen_a
-        .zip(gen_b)
-        .take(40_000_000)
+fn judge(a: impl Iterator<Item = Int>, b: impl Iterator<Item = Int>, count: usize) -> usize {
+    a.zip(b)
+        .take(count)
         .filter(|&(a, b)| (a as u16) == (b as u16))
         .count()
 }
 
+pub fn part1(a: i64, b: i64) -> usize {
+    judge(
+        unfold(a, generator(FACTOR_A)),
+        unfold(b, generator(FACTOR_B)),
+        40_000_000,
+    )
+}
+
 pub fn part2(a: i64, b: i64) -> usize {
-    let gen_a = Generator {
-        value: a,
-        factor: 16807,
-    }.filter(|x| x % 4 == 0);
-    let gen_b = Generator {
-        value: b,
-        factor: 48271,
-    }.filter(|x| x % 8 == 0);
-    gen_a
-        .zip(gen_b)
-        .take(5_000_000)
-        .filter(|&(a, b)| (a as u16) == (b as u16))
-        .count()
+    judge(
+        unfold(a, generator(FACTOR_A)).filter(|x| x % 4 == 0),
+        unfold(b, generator(FACTOR_B)).filter(|x| x % 8 == 0),
+        5_000_000,
+    )
 }
