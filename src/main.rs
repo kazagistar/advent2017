@@ -7,6 +7,7 @@
 #![feature(range_contains)]
 #![feature(slice_patterns)]
 #![feature(inclusive_range_syntax)]
+#![feature(slice_rotate)]
 
 extern crate bit_vec;
 extern crate itertools;
@@ -31,6 +32,7 @@ mod day12;
 mod day13;
 mod day14;
 mod day15;
+mod day16;
 
 fn main() {
     let input1 = util::get_file_string("data/input1.txt");
@@ -90,4 +92,8 @@ fn main() {
     let input15 = (873, 583);
     println!("Day 15, part 1: {:?}", day15::part1(input15.0, input15.1));
     println!("Day 15, part 2: {:?}", day15::part2(input15.0, input15.1));
+
+    let input16 = util::get_file_string("data/input16.txt");
+    println!("Day 16, part 1: {:?}", day16::part1(&input16));
+    println!("Day 16, part 2: {:?}", day16::part2(&input16));
 }
