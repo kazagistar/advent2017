@@ -20,3 +20,8 @@ pub fn part2(input: usize) -> usize {
     }
     after_0
 }
+
+#[test]
+fn examples() {
+    assert_eq!(638, part1(3));
+}
