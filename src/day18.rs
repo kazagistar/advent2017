@@ -1,6 +1,6 @@
 use self::Mem::*;
 use self::Event::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 type Int = i64;
 
@@ -16,7 +16,7 @@ fn parse_mem(mem: &str) -> Mem {
         .unwrap_or_else(|_| Reg(mem.chars().next().unwrap()))
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Cmd<'a>(&'a str, Mem, Mem);
 
 fn parse_program(program: &str) -> Vec<Cmd> {
@@ -114,21 +114,97 @@ pub fn part1(input: &str) -> i64 {
     }
 }
 
-pub fn part2(input: &str) -> &'static str {
-    "?"
+#[derive(Debug, PartialEq, Copy, Clone)]
+enum State {
+    Ready,
+    Done,
+    Blocked(char),
+}
+use self::State::*;
+
+#[derive(Debug)]
+struct CoMachine<'a> {
+    inner: Machine<'a>,
+    state: State,
+    queue: VecDeque<Int>,
+}
+
+impl<'a> CoMachine<'a> {
+    fn new(program: Vec<Cmd<'a>>, id: Int) -> Self {
+        let mut inner = Machine::new(program);
+        inner.registers.insert('p', id);
+        CoMachine {
+            inner,
+            state: Ready,
+            queue: VecDeque::new(),
+        }
+    }
+
+    fn try_feed(&mut self) {
+        if let Blocked(r) = self.state {
+            if let Some(x) = self.queue.pop_front() {
+                self.inner.registers.insert(r, x);
+                self.state = Ready;
+            }
+        }
+    }
+
+    fn run(&mut self, target: &mut VecDeque<Int>) {
+        self.try_feed();
+        while self.state == Ready {
+            match self.inner.run() {
+                Snd(i) => target.push_back(i),
+                Rcv(r) => {
+                    self.state = Blocked(r);
+                    self.try_feed();
+                }
+                End => self.state = Done,
+            }
+        }
+    }
+
+    fn halted(&self) -> bool {
+        match self.state {
+            Ready => false,
+            Done => true,
+            Blocked(_) => self.queue.is_empty(),
+        }
+    }
+}
+
+pub fn part2(input: &str) -> usize {
+    let program = parse_program(input);
+    let mut m0 = CoMachine::new(program.clone(), 0);
+    let mut m1 = CoMachine::new(program, 1);
+    let mut sent_by_m1 = 0;
+    while !(m0.halted() && m1.halted()) {
+        m0.run(&mut m1.queue);
+        m1.run(&mut m0.queue);
+        sent_by_m1 += m0.queue.len();
+    }
+    sent_by_m1
 }
 
 #[test]
 fn examples() {
-    let input = "set a 1
-                 add a 2
-                 mul a a
-                 mod a 5
-                 snd a
-                 set a 0
-                 rcv a
-                 jgz a -1
-                 set a 1
-                 jgz a -2";
-    assert_eq!(4, part1(input));
+    let input1 = "set a 1
+                  add a 2
+                  mul a a
+                  mod a 5
+                  snd a
+                  set a 0
+                  rcv a
+                  jgz a -1
+                  set a 1
+                  jgz a -2";
+    assert_eq!(4, part1(input1));
+
+    let input2 = "snd 1
+                  snd 2
+                  snd p
+                  rcv a
+                  rcv b
+                  rcv c
+                  rcv d";
+    assert_eq!(3, part2(input2));
 }
