@@ -1,33 +1,33 @@
-use self::Mem::*;
-use self::Event::*;
 use std::collections::{HashMap, VecDeque};
 
 type Int = i64;
+type Reg = char;
 
 #[derive(Debug, Copy, Clone)]
 enum Mem {
-    Num(Int),
-    Reg(char),
+    Number(Int),
+    Register(Reg),
 }
+use self::Mem::*;
 
 fn parse_mem(mem: &str) -> Mem {
     mem.parse()
-        .map(Num)
-        .unwrap_or_else(|_| Reg(mem.chars().next().unwrap()))
+        .map(Number)
+        .unwrap_or_else(|_| Register(mem.chars().next().unwrap()))
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 struct Cmd<'a>(&'a str, Mem, Mem);
 
-fn parse_program(program: &str) -> Vec<Cmd> {
-    program
+fn parse_program(source: &str) -> Vec<Cmd> {
+    source
         .lines()
         .map(|line| {
             let mut items = line.trim().split_whitespace();
             Cmd(
                 items.next().unwrap(),
                 parse_mem(items.next().unwrap()),
-                items.next().map(parse_mem).unwrap_or_else(|| Reg(' ')),
+                items.next().map(parse_mem).unwrap_or_else(|| Register(' ')),
             )
         })
         .collect()
@@ -36,25 +36,26 @@ fn parse_program(program: &str) -> Vec<Cmd> {
 #[derive(Debug, PartialEq)]
 enum Event {
     Snd(Int),
-    Rcv(char),
+    Rcv(Reg),
     End,
 }
+use self::Event::*;
 
 #[derive(Debug)]
 struct Machine<'a> {
-    program: Vec<Cmd<'a>>,
-    registers: HashMap<char, Int>,
+    program: &'a [Cmd<'a>],
+    registers: HashMap<Reg, Int>,
     pc: usize,
 }
 
 impl<'a> Machine<'a> {
-    fn new(program: Vec<Cmd<'a>>) -> Self {
+    fn new(program: &'a [Cmd<'a>]) -> Self {
         let mut registers = HashMap::new();
-        for &Cmd(_, x, y) in &program {
-            if let Reg(c) = x {
+        for &Cmd(_, x, y) in program {
+            if let Register(c) = x {
                 registers.insert(c, 0);
             }
-            if let Reg(c) = y {
+            if let Register(c) = y {
                 registers.insert(c, 0);
             }
         }
@@ -67,24 +68,29 @@ impl<'a> Machine<'a> {
 
     fn get(&self, mem: Mem) -> Int {
         match mem {
-            Num(i) => i,
-            Reg(r) => self.registers.get(&r).map(|i| *i).unwrap_or(0),
+            Number(i) => i,
+            Register(r) => self.registers.get(&r).map(|i| *i).unwrap_or(0),
         }
+    }
+
+    fn modify(&mut self, r: Reg, x: Mem, f: impl Fn(&mut Int, Int)) {
+        let v = self.get(x);
+        f(self.registers.get_mut(&r).unwrap(), v);
     }
 
     fn run(&mut self) -> Event {
         let mut status = None;
         while status == None {
             match &self.program[self.pc] {
-                &Cmd("set", Reg(r), x) => *self.registers.entry(r).or_insert(0) = self.get(x),
-                &Cmd("add", Reg(r), x) => *self.registers.entry(r).or_insert(0) += self.get(x),
-                &Cmd("mul", Reg(r), x) => *self.registers.entry(r).or_insert(0) *= self.get(x),
-                &Cmd("mod", Reg(r), x) => *self.registers.entry(r).or_insert(0) %= self.get(x),
+                &Cmd("set", Register(r), x) => self.modify(r, x, |r, x| *r = x),
+                &Cmd("add", Register(r), x) => self.modify(r, x, |r, x| *r += x),
+                &Cmd("mul", Register(r), x) => self.modify(r, x, |r, x| *r *= x),
+                &Cmd("mod", Register(r), x) => self.modify(r, x, |r, x| *r %= x),
                 &Cmd("jgz", x, y) => if self.get(x) > 0 {
                     self.pc = (self.pc as Int + self.get(y) - 1) as usize
                 },
                 &Cmd("snd", x, _) => status = Some(Snd(self.get(x))),
-                &Cmd("rcv", Reg(r), _) => status = Some(Rcv(r)),
+                &Cmd("rcv", Register(r), _) => status = Some(Rcv(r)),
                 c => panic!("Bad command: {:?}", c),
             }
             self.pc += 1;
@@ -97,7 +103,8 @@ impl<'a> Machine<'a> {
 }
 
 pub fn part1(input: &str) -> i64 {
-    let mut machine = Machine::new(parse_program(input));
+    let program = parse_program(input);
+    let mut machine = Machine::new(&program);
     let mut sent = None;
     loop {
         match machine.run() {
@@ -114,11 +121,11 @@ pub fn part1(input: &str) -> i64 {
     }
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq)]
 enum State {
     Ready,
     Done,
-    Blocked(char),
+    Blocked(Reg),
 }
 use self::State::*;
 
@@ -130,7 +137,7 @@ struct CoMachine<'a> {
 }
 
 impl<'a> CoMachine<'a> {
-    fn new(program: Vec<Cmd<'a>>, id: Int) -> Self {
+    fn new(program: &'a [Cmd<'a>], id: Int) -> Self {
         let mut inner = Machine::new(program);
         inner.registers.insert('p', id);
         CoMachine {
@@ -174,8 +181,8 @@ impl<'a> CoMachine<'a> {
 
 pub fn part2(input: &str) -> usize {
     let program = parse_program(input);
-    let mut m0 = CoMachine::new(program.clone(), 0);
-    let mut m1 = CoMachine::new(program, 1);
+    let mut m0 = CoMachine::new(&program, 0);
+    let mut m1 = CoMachine::new(&program, 1);
     let mut sent_by_m1 = 0;
     while !(m0.halted() && m1.halted()) {
         m0.run(&mut m1.queue);
